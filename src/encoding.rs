@@ -7,7 +7,7 @@ use crate::errors::{new_error, ErrorKind, Result};
 use crate::header::Header;
 #[cfg(feature = "use_pem")]
 use crate::pem::decoder::PemEncodedKey;
-use crate::serialization::b64_encode_part;
+use crate::serialization::{b64_encode, b64_encode_part};
 
 /// A key to encode a JWT with. Can be a secret, a PEM-encoded key or a DER-encoded key.
 /// This key can be re-used so make sure you only initialize it once if you can for better performance.
@@ -154,4 +154,9 @@ pub fn encode_unsigned<T: Serialize>(header: &Header, claims: &T) -> Result<Stri
     let message = [encoded_header, encoded_claims].join(".");
 
     Ok(message)
+}
+
+/// Add signature to unsigned message
+pub unsafe fn add_signature_to_unsigned(message: String, signature: &Vec<u8>) -> String {
+    [message, b64_encode(signature)].join(".")
 }

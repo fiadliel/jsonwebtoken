@@ -19,6 +19,6 @@ mod validation;
 
 pub use algorithms::Algorithm;
 pub use decoding::{decode, decode_header, DecodingKey, TokenData};
-pub use encoding::{encode, encode_unsigned, EncodingKey};
+pub use encoding::{add_signature_to_unsigned, encode, encode_unsigned, EncodingKey};
 pub use header::Header;
 pub use validation::{get_current_timestamp, Validation};
