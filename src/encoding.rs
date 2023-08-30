@@ -122,10 +122,36 @@ pub fn encode<T: Serialize>(header: &Header, claims: &T, key: &EncodingKey) -> R
     if key.family != header.alg.family() {
         return Err(new_error(ErrorKind::InvalidAlgorithm));
     }
-    let encoded_header = b64_encode_part(header)?;
-    let encoded_claims = b64_encode_part(claims)?;
-    let message = [encoded_header, encoded_claims].join(".");
+    let message = encode_unsigned(header, claims)?;
     let signature = crypto::sign(message.as_bytes(), key, header.alg)?;
 
     Ok([message, signature].join("."))
+}
+
+/// Encode the header and claims given. The user needs to sign the token appropriately.
+///
+/// ```rust
+/// use serde::{Deserialize, Serialize};
+/// use jsonwebtoken::{encode, Algorithm, Header, EncodingKey};
+///
+/// #[derive(Debug, Serialize, Deserialize)]
+/// struct Claims {
+///    sub: String,
+///    company: String
+/// }
+///
+/// let my_claims = Claims {
+///     sub: "b@b.com".to_owned(),
+///     company: "ACME".to_owned()
+/// };
+///
+/// // my_claims is a struct that implements Serialize
+/// let token = encode_unsigned(&Header::default(), &my_claims).unwrap();
+/// ```
+pub fn encode_unsigned<T: Serialize>(header: &Header, claims: &T) -> Result<String> {
+    let encoded_header = b64_encode_part(header)?;
+    let encoded_claims = b64_encode_part(claims)?;
+    let message = [encoded_header, encoded_claims].join(".");
+
+    Ok(message)
 }
